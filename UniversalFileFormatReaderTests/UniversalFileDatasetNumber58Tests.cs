@@ -72,10 +72,10 @@ RMX-gfdghfh-565676-xxx-788799
 19-09-25T07:13:58Z
 3465678-XXX
 GnDe1;0,0102;m/s2
-    0         0    0         0 Channel_00         0   0 NONE               0   0
+    0         0    0         0 Channel_01         0   0 NONE               0   0
          4        20         0  0.00000E+00  0.00000E+00  0.00000E+00
         17    0    0    0 Time                 s                   
-         1    0    0    0 Generator Drive End  m/s2                
+         1    0    0    0 Generator Drive End1 m/s2                
          0    0    0    0 NONE                 NONE                
          0    0    0    0 NONE                 NONE                
   0.00000E+00  1.258055743049E+03  1.00000E+00  1.258701997645E+03
@@ -126,6 +126,21 @@ GnDe1;0,0102;m/s2
         }
 
         [Test]
+        public async Task FunctionIdentificationIsReadCorrectly()
+        {
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
+            var reader = new Reader(stream);
+
+            var datasets = (await reader.ReadAsync()).OfType<UniversalFileDatasetNumber58>();
+
+            datasets.ElementAt(0).FunctionIdentification.Type.Should().Be(FunctionIdentificationType.GeneralOrUnknown);
+            datasets.ElementAt(0).FunctionIdentification.Number.Should().Be(0);
+            datasets.ElementAt(0).FunctionIdentification.VersionOrSequenceNumber.Should().Be(0);
+            datasets.ElementAt(0).FunctionIdentification.ResponseEntityName.Should().Be("AP");
+            datasets.ElementAt(0).FunctionIdentification.ReferenceEntityName.Should().Be("NONE");
+        }
+
+        [Test]
         public async Task DataTypeIsReadCorrectly()
         {
             await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
@@ -158,7 +173,60 @@ GnDe1;0,0102;m/s2
         }
 
         [Test]
-        public async Task DataIsReadCorrectly()
+        public async Task AbscissaDataCharacteristicsAreReadCorrectly()
+        {
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
+            var reader = new Reader(stream);
+
+            var datasets = (await reader.ReadAsync()).OfType<UniversalFileDatasetNumber58>();
+
+            datasets.Should().OnlyContain(x => x.AbscissaDataCharacteristics.DataType == AxisDataType.Time);
+            datasets.Should().OnlyContain(x => x.AbscissaDataCharacteristics.Label == "Time");
+            datasets.Should().OnlyContain(x => x.AbscissaDataCharacteristics.Unit == "s");
+        }
+
+        [Test]
+        public async Task OrdinateDataCharacteristicsAreReadCorrectly()
+        {
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
+            var reader = new Reader(stream);
+
+            var datasets = (await reader.ReadAsync()).OfType<UniversalFileDatasetNumber58>();
+
+            datasets.Should().OnlyContain(x => x.OrdinateDataCharacteristics.DataType == AxisDataType.General && x.OrdinateDataCharacteristics.LengthUnitExponent == 0 &&
+                                               x.OrdinateDataCharacteristics.ForceUnitExponent == 0 && x.OrdinateDataCharacteristics.TemperatureUnitExponent == 0);
+            datasets.ElementAt(0).OrdinateDataCharacteristics.Label.Should().Be("PwrAvg");
+            datasets.ElementAt(3).OrdinateDataCharacteristics.Label.Should().Be("Generator Drive End1");
+        }
+
+        [Test]
+        public async Task OrdinateDenominatorDataCharacteristicsAreReadCorrectly()
+        {
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
+            var reader = new Reader(stream);
+
+            var datasets = (await reader.ReadAsync()).OfType<UniversalFileDatasetNumber58>();
+
+            datasets.Should().OnlyContain(x => x.OrdinateDenominatorDataCharacteristics.DataType == AxisDataType.Unknown);
+            datasets.Should().OnlyContain(x => x.OrdinateDenominatorDataCharacteristics.Label == "NONE");
+            datasets.Should().OnlyContain(x => x.OrdinateDenominatorDataCharacteristics.Unit == "NONE");
+        }
+
+        [Test]
+        public async Task ZAxisDataCharacteristicsAreReadCorrectly()
+        {
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
+            var reader = new Reader(stream);
+
+            var datasets = (await reader.ReadAsync()).OfType<UniversalFileDatasetNumber58>();
+
+            datasets.Should().OnlyContain(x => x.ZAxisDataCharacteristics.DataType == AxisDataType.Unknown);
+            datasets.Should().OnlyContain(x => x.ZAxisDataCharacteristics.Label == "NONE");
+            datasets.Should().OnlyContain(x => x.ZAxisDataCharacteristics.Unit == "NONE");
+        }
+
+        [Test]
+        public async Task RealDataIsReadCorrectly()
         {
             await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(FileContent));
             var reader = new Reader(stream);

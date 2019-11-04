@@ -37,21 +37,53 @@ namespace UniversalFileFormatReader.Interpreters
                 case 5:
                     _dataset.Headers[_recordNumber - 1] = line;
                     break;
+                case 6:
+                    //Format(2(I5,I10),2(1X,10A1,I10,I4))
+                    _dataset.FunctionIdentification.Type = (FunctionIdentificationType)int.Parse(line.Substring(0, 5), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.FunctionIdentification.Number = int.Parse(line.Substring(5, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.FunctionIdentification.VersionOrSequenceNumber = int.Parse(line.Substring(15, 5), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.FunctionIdentification.ResponseEntityName = line.Substring(31, 10).TrimEnd(' ');
+                    _dataset.FunctionIdentification.ResponseNode = int.Parse(line.Substring(41, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.FunctionIdentification.ResponseDirection = int.Parse(line.Substring(51, 4), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.FunctionIdentification.ReferenceEntityName = line.Substring(56, 10).TrimEnd(' ');
+                    _dataset.FunctionIdentification.ReferenceNode = int.Parse(line.Substring(66, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.FunctionIdentification.ReferenceDirection = int.Parse(line.Substring(76, 4), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    break;
                 case 7:
                     // Format(3I10,3E13.5)
-                    _dataset.DataType = (UniversalFileDatasetNumber58DataType)int.Parse(line.Substring(0, 10).TrimStart(' '));
-                    _dataset.DataCount = long.Parse(line.Substring(10, 10).TrimStart(' '));
-                    _dataset.AbscissaIsUneven = int.Parse(line.Substring(20, 10).TrimStart(' ')) == 0;
+                    _dataset.DataType = (UniversalFileDatasetNumber58DataType)int.Parse(line.Substring(0, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.DataCount = long.Parse(line.Substring(10, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    _dataset.AbscissaIsUneven = int.Parse(line.Substring(20, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture) == 0;
                     _dataset.AbscissaMinimum = double.Parse(line.Substring(30, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
                     _dataset.AbscissaSpacing = double.Parse(line.Substring(43, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
                     _dataset.ZAxisValue = double.Parse(line.Substring(56, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
 
                     _currentDataIndex = _dataset.AbscissaMinimum;
                     break;
+                case 8:
+                    ExtractAxisDataCharacteristics(line, _dataset.AbscissaDataCharacteristics);
+                    break;
+                case 9:
+                    ExtractAxisDataCharacteristics(line, _dataset.OrdinateDataCharacteristics);
+                    break;
+                case 10:
+                    ExtractAxisDataCharacteristics(line, _dataset.OrdinateDenominatorDataCharacteristics);
+                    break;
+                case 11:
+                    ExtractAxisDataCharacteristics(line, _dataset.ZAxisDataCharacteristics);
+                    break;
                 case 12:
                     AddDataLine(line);
                     break;
             }
+        }
+
+        private static void ExtractAxisDataCharacteristics(string line, AxisDataCharacteristics axisDataCharacteristics)
+        {
+            // Format(I10,3I5,2(1X,20A1))
+            axisDataCharacteristics.DataType = (AxisDataType) int.Parse(line.Substring(0, 10).TrimStart(' '));
+            axisDataCharacteristics.Label = line.Substring(26, 20).TrimEnd();
+            axisDataCharacteristics.Unit = line.Substring(47, 20).TrimEnd();
         }
 
         public UniversalFileDataset Build()
