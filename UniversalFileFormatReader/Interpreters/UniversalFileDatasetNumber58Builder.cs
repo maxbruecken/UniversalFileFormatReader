@@ -3,13 +3,13 @@ using System.Globalization;
 
 namespace UniversalFileFormatReader.Interpreters
 {
-    public class UniversalFileDatasetNumber58Builder : IUniversalFileDatasetBuilder
+    internal class UniversalFileDatasetNumber58Builder : IUniversalFileDatasetBuilder
     {
         private const string NumberLine = "    58";
 
-        private readonly UniversalFileDatasetNumber58 _dataset;
+        protected readonly UniversalFileDatasetNumber58 Dataset;
         
-        private int _recordNumber;
+        protected int RecordNumber;
         private double _currentDataIndex;
         
         public static IUniversalFileDatasetBuilder ForNumberLine(string numberLine, IUniversalFileDatasetBuilder next)
@@ -17,65 +17,71 @@ namespace UniversalFileFormatReader.Interpreters
             return numberLine.Equals(NumberLine, StringComparison.InvariantCultureIgnoreCase) ? new UniversalFileDatasetNumber58Builder() : next;
         }
 
-        private UniversalFileDatasetNumber58Builder()
+        protected UniversalFileDatasetNumber58Builder()
         {
-            _dataset = new UniversalFileDatasetNumber58();
+            Dataset = new UniversalFileDatasetNumber58();
         }
 
-        public void AddLine(string line)
+        public virtual DataAdditionResult AddData(DataType dataType, object data)
         {
-            if (_recordNumber < 12)
+            if (dataType != DataType.ASCIILine)
             {
-                _recordNumber++;
+                throw new NotSupportedException("Only ASCII data type is supported");
             }
-            switch (_recordNumber)
+            var line = (string) data;
+            if (RecordNumber < 12)
+            {
+                RecordNumber++;
+            }
+            switch (RecordNumber)
             {
                 case 1:
                 case 2:
                 case 3:
                 case 4:
                 case 5:
-                    _dataset.Headers[_recordNumber - 1] = line;
+                    Dataset.Headers[RecordNumber - 1] = line;
                     break;
                 case 6:
                     //Format(2(I5,I10),2(1X,10A1,I10,I4))
-                    _dataset.FunctionIdentification.Type = (FunctionIdentificationType)int.Parse(line.Substring(0, 5), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.FunctionIdentification.Number = int.Parse(line.Substring(5, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.FunctionIdentification.VersionOrSequenceNumber = int.Parse(line.Substring(15, 5), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.FunctionIdentification.ResponseEntityName = line.Substring(31, 10).TrimEnd(' ');
-                    _dataset.FunctionIdentification.ResponseNode = int.Parse(line.Substring(41, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.FunctionIdentification.ResponseDirection = int.Parse(line.Substring(51, 4), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.FunctionIdentification.ReferenceEntityName = line.Substring(56, 10).TrimEnd(' ');
-                    _dataset.FunctionIdentification.ReferenceNode = int.Parse(line.Substring(66, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.FunctionIdentification.ReferenceDirection = int.Parse(line.Substring(76, 4), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.Type = (FunctionIdentificationType)int.Parse(line.Substring(0, 5), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.Number = int.Parse(line.Substring(5, 10), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.VersionOrSequenceNumber = int.Parse(line.Substring(15, 5), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.ResponseEntityName = line.Substring(31, 10).TrimEnd(' ');
+                    Dataset.FunctionIdentification.ResponseNode = int.Parse(line.Substring(41, 10), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.ResponseDirection = int.Parse(line.Substring(51, 4), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.ReferenceEntityName = line.Substring(56, 10).TrimEnd(' ');
+                    Dataset.FunctionIdentification.ReferenceNode = int.Parse(line.Substring(66, 10), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.FunctionIdentification.ReferenceDirection = int.Parse(line.Substring(76, 4), NumberStyles.Integer, CultureInfo.InvariantCulture);
                     break;
                 case 7:
                     // Format(3I10,3E13.5)
-                    _dataset.DataType = (UniversalFileDatasetNumber58DataType)int.Parse(line.Substring(0, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.DataCount = long.Parse(line.Substring(10, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture);
-                    _dataset.AbscissaIsUneven = int.Parse(line.Substring(20, 10), NumberStyles.AllowLeadingWhite, CultureInfo.InvariantCulture) == 0;
-                    _dataset.AbscissaMinimum = double.Parse(line.Substring(30, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
-                    _dataset.AbscissaSpacing = double.Parse(line.Substring(43, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
-                    _dataset.ZAxisValue = double.Parse(line.Substring(56, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
+                    Dataset.DataType = (UniversalFileDatasetNumber58DataType)int.Parse(line.Substring(0, 10), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.DataCount = long.Parse(line.Substring(10, 10), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    Dataset.AbscissaIsUneven = int.Parse(line.Substring(20, 10), NumberStyles.Integer, CultureInfo.InvariantCulture) == 0;
+                    Dataset.AbscissaMinimum = double.Parse(line.Substring(30, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
+                    Dataset.AbscissaSpacing = double.Parse(line.Substring(43, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
+                    Dataset.ZAxisValue = double.Parse(line.Substring(56, 13), NumberStyles.Float, CultureInfo.InvariantCulture);
 
-                    _currentDataIndex = _dataset.AbscissaMinimum;
+                    _currentDataIndex = Dataset.AbscissaMinimum;
                     break;
                 case 8:
-                    ExtractAxisDataCharacteristics(line, _dataset.AbscissaDataCharacteristics);
+                    ExtractAxisDataCharacteristics(line, Dataset.AbscissaDataCharacteristics);
                     break;
                 case 9:
-                    ExtractAxisDataCharacteristics(line, _dataset.OrdinateDataCharacteristics);
+                    ExtractAxisDataCharacteristics(line, Dataset.OrdinateDataCharacteristics);
                     break;
                 case 10:
-                    ExtractAxisDataCharacteristics(line, _dataset.OrdinateDenominatorDataCharacteristics);
+                    ExtractAxisDataCharacteristics(line, Dataset.OrdinateDenominatorDataCharacteristics);
                     break;
                 case 11:
-                    ExtractAxisDataCharacteristics(line, _dataset.ZAxisDataCharacteristics);
+                    ExtractAxisDataCharacteristics(line, Dataset.ZAxisDataCharacteristics);
                     break;
                 case 12:
                     AddDataLine(line);
                     break;
             }
+            return new DataAdditionResult(DataType.ASCIILine, -1);
         }
 
         private static void ExtractAxisDataCharacteristics(string line, AxisDataCharacteristics axisDataCharacteristics)
@@ -83,12 +89,12 @@ namespace UniversalFileFormatReader.Interpreters
             // Format(I10,3I5,2(1X,20A1))
             axisDataCharacteristics.DataType = (AxisDataType) int.Parse(line.Substring(0, 10).TrimStart(' '));
             axisDataCharacteristics.Label = line.Substring(26, 20).TrimEnd();
-            axisDataCharacteristics.Unit = line.Substring(47, 20).TrimEnd();
+            axisDataCharacteristics.Unit = line.Substring(47, Math.Min(20, line.Length - 47)).TrimEnd();
         }
 
         public UniversalFileDataset Build()
         {
-            return _dataset;
+            return Dataset;
         }
 
         private void AddDataLine(string line)
@@ -101,17 +107,17 @@ namespace UniversalFileFormatReader.Interpreters
 
         private void HandleRealNumbersWithEvenAbscissa(string line)
         {
-            if (_dataset.DataType != UniversalFileDatasetNumber58DataType.RealSingle && _dataset.DataType != UniversalFileDatasetNumber58DataType.RealDouble)
+            if (Dataset.DataType != UniversalFileDatasetNumber58DataType.RealSingle && Dataset.DataType != UniversalFileDatasetNumber58DataType.RealDouble)
             {
                 return;
             }
-            if (_dataset.AbscissaIsUneven)
+            if (Dataset.AbscissaIsUneven)
             {
                 return;
             }
 
-            var pointsPerLine = _dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 6 : 4;
-            var pointValueLength = _dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 13 : 20;
+            var pointsPerLine = Dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 6 : 4;
+            var pointValueLength = Dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 13 : 20;
             for (var pointIndex = 0; pointIndex < pointsPerLine; pointIndex++)
             {
                 if (line.Length < pointIndex * pointValueLength + pointValueLength)
@@ -119,26 +125,26 @@ namespace UniversalFileFormatReader.Interpreters
                     break;
                 }
                 var value = double.Parse(line.Substring(pointIndex * pointValueLength, pointValueLength), NumberStyles.Float, CultureInfo.InvariantCulture);
-                _dataset.Data.Add(new UniversalFileDatasetNumber58DataPoint(_currentDataIndex, value, double.NaN));
+                Dataset.Data.Add(new UniversalFileDatasetNumber58DataPoint(_currentDataIndex, value, double.NaN));
 
-                _currentDataIndex += _dataset.AbscissaSpacing;
+                _currentDataIndex += Dataset.AbscissaSpacing;
             }
         }
 
         private void HandleRealNumbersWithUnevenAbscissa(string line)
         {
-            if (_dataset.DataType != UniversalFileDatasetNumber58DataType.RealSingle && _dataset.DataType != UniversalFileDatasetNumber58DataType.RealDouble)
+            if (Dataset.DataType != UniversalFileDatasetNumber58DataType.RealSingle && Dataset.DataType != UniversalFileDatasetNumber58DataType.RealDouble)
             {
                 return;
             }
-            if (!_dataset.AbscissaIsUneven)
+            if (!Dataset.AbscissaIsUneven)
             {
                 return;
             }
             
-            var pointsPerLine = _dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 3 : 2;
-            var pointValueLength = _dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 26 : 33;
-            if (_dataset.DataType == UniversalFileDatasetNumber58DataType.RealDouble)
+            var pointsPerLine = Dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 3 : 2;
+            var pointValueLength = Dataset.DataType == UniversalFileDatasetNumber58DataType.RealSingle ? 26 : 33;
+            if (Dataset.DataType == UniversalFileDatasetNumber58DataType.RealDouble)
             {
                 // allow abscissa values to have format E20.12
                 if (line.Length > pointValueLength && line.Length % pointValueLength != 0)
@@ -161,30 +167,44 @@ namespace UniversalFileFormatReader.Interpreters
                 var indexLength = pairString.Length - 20;
                 var index = double.Parse(pairString.Substring(0, indexLength), NumberStyles.Float, CultureInfo.InvariantCulture);
                 var value = double.Parse(pairString.Substring(indexLength), NumberStyles.Float, CultureInfo.InvariantCulture);
-                _dataset.Data.Add(new UniversalFileDatasetNumber58DataPoint(index, value, double.NaN));
+                Dataset.Data.Add(new UniversalFileDatasetNumber58DataPoint(index, value, double.NaN));
             }
         }
 
         private void HandleComplexNumbersWithEvenAbscissa(string line)
         {
-            if (_dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexSingle && _dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexDouble)
+            if (Dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexSingle && Dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexDouble)
             {
                 return;
             }
-            if (_dataset.AbscissaIsUneven)
+            if (Dataset.AbscissaIsUneven)
             {
                 return;
             }
-            throw new NotSupportedException("Complex numbers not supported yet.");
+            
+            var pointsPerLine = Dataset.DataType == UniversalFileDatasetNumber58DataType.ComplexSingle ? 3 : 2;
+            var pointValueLength = Dataset.DataType == UniversalFileDatasetNumber58DataType.ComplexSingle ? 13 : 20;
+            for (var pointIndex = 0; pointIndex < pointsPerLine; pointIndex++)
+            {
+                if (line.Length < 2 * (pointIndex * pointValueLength + pointValueLength))
+                {
+                    break;
+                }
+                var realValue = double.Parse(line.Substring(2 * pointIndex * pointValueLength, pointValueLength), NumberStyles.Float, CultureInfo.InvariantCulture);
+                var imaginaryValue = double.Parse(line.Substring(2 * pointIndex * pointValueLength + pointValueLength, pointValueLength), NumberStyles.Float, CultureInfo.InvariantCulture);
+                Dataset.Data.Add(new UniversalFileDatasetNumber58DataPoint(_currentDataIndex, realValue, imaginaryValue));
+
+                _currentDataIndex += Dataset.AbscissaSpacing;
+            }
         }
 
         private void HandleComplexNumbersWithUnevenAbscissa(string line)
         {
-            if (_dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexSingle && _dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexDouble)
+            if (Dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexSingle && Dataset.DataType != UniversalFileDatasetNumber58DataType.ComplexDouble)
             {
                 return;
             }
-            if (!_dataset.AbscissaIsUneven)
+            if (!Dataset.AbscissaIsUneven)
             {
                 return;
             }

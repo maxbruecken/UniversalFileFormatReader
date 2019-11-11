@@ -17,4 +17,28 @@
       <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="TestData\uff_58.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="TestData\uff_58b.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="TestData\uff_58_lf_only.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="TestData\uff_58_cr_only.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="TestData\uff_58b_real_double_even.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="TestData\uff_58_complex_single_even.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="TestData\uff_58b_complex_single_even.uff">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>0.3.0</Version>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>7.3</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Maxim Becker</Authors>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-        <Description>Reader for unversal file format (UFF) data. Supports actually only Data Set Number 58.</Description>
+        <Description>Reader for unversal file format (UFF) data. Supports actually only Data Set Number 58 and 58b.</Description>
     </PropertyGroup>
 
 </Project>

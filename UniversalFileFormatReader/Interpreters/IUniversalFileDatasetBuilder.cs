@@ -1,8 +1,10 @@
+using System.Data.Common;
+
 namespace UniversalFileFormatReader.Interpreters
 {
-    public interface IUniversalFileDatasetBuilder
+    internal interface IUniversalFileDatasetBuilder
     {   
-        void AddLine(string line);
+        DataAdditionResult AddData(DataType dataType, object data);
 
         UniversalFileDataset Build();
     }
